@@ -11,3 +11,4 @@
 - [x] T9. Admin PIN reset (AUTH-8)
 - [x] T10. Migration 0003 `users.starter_pin`; set on create/reset, cleared on change (AUTH-13)
 - [x] T11. One-tap "Send new login" from the order card (AUTH-14)
+- [x] T12. Strict 10-digit phone rule + same message on every form (AUTH-3, AUTH-15)

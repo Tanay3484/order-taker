@@ -53,7 +53,7 @@ def setup_submit(request: Request, conn=Depends(get_conn), name: str = Form(""),
     if not shop_name.strip():
         errors.append("Please enter your shop's name.")
     if not auth.normalise_phone(shop_whatsapp):
-        errors.append("Please enter the shop's WhatsApp number.")
+        errors.append("The shop's WhatsApp number: " + auth.PHONE_RULE)
     if errors:
         form = dict(name=name, username=username, shop_name=shop_name, shop_whatsapp=shop_whatsapp)
         return render(request, conn, "setup.html", status_code=400, errors=errors, form=form)

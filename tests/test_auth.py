@@ -43,9 +43,55 @@ def test_auth3_phone_normalisation(raw):
     assert auth.normalise_phone(raw) == "9845012345"
 
 
-def test_auth3_too_short_is_not_a_phone():
-    assert auth.normalise_phone("123") is None
-    assert auth.normalise_phone("") is None
+@pytest.mark.parametrize("raw", ["", "123", "98450 1234", "98450 123456", "1234567890123", "919845012",
+                                 "19845012345", "abc", "+44 7700 900123"])
+def test_auth3_anything_but_10_digits_is_rejected(raw):
+    """AUTH-3: after removing +91 / 91 / 0, exactly 10 digits or it isn't a phone."""
+    assert auth.normalise_phone(raw) is None
+
+
+def test_auth15_login_with_bad_phone_explains_and_does_not_count(conn, app):
+    """AUTH-15: plain message, not counted as a failed attempt, reveals nothing."""
+    c = make_customer(conn)
+    for _ in range(6):
+        with pytest.raises(auth.LoginError, match="10 digits"):
+            auth.login(conn, "customer", "98450 1234", "0000")
+    assert auth.get_user(conn, c["id"])["failed_attempts"] == 0
+
+
+def test_auth15_same_message_on_every_form(client, conn):
+    """AUTH-15: setup, settings, add-phone, draft edit and order edit all reject a 9-digit number."""
+    rule = auth.PHONE_RULE
+    r = post(client, "/setup", {"name": "Asha", "username": "asha", "password": ADMIN_PASSWORD,
+                                "shop_name": "S", "shop_whatsapp": "99000 1111"}, page="/setup")
+    assert r.status_code == 400 and rule in page_text(r)
+    setup_admin(client)
+    r = post(client, "/admin/settings", {"shop_name": "S", "shop_whatsapp": "99000 111111"}, page="/admin/settings")
+    assert rule in page_text(r)
+
+    oid = make_order(conn, None)
+    r = post(client, f"/admin/orders/{oid}/phone", {"phone": "98450 1234"}, page=f"/admin/orders/{oid}/edit")
+    assert rule in page_text(r)
+
+    from order_taker.models import Order, OrderItem
+    d = om.save_draft(conn, source="chat", action="new", sender="Sneha",
+                      order=Order(customer="Sneha", items=[OrderItem(name="cake", quantity=1)]))
+    for url in (f"/admin/drafts/{d}/edit", f"/admin/orders/{oid}/edit"):
+        r = post(client, url, {"customer": "Sneha", "phone": "98450 1234", "item_name": "cake", "item_qty": "1",
+                               "item_unit": "kg"}, page=url)
+        assert r.status_code == 400 and rule in page_text(r), url
+
+
+def test_trk29_changing_phone_on_edit_relinks_customer(client, conn):
+    """TRK-29: the phone on Edit order is saved and links the right customer."""
+    setup_admin(client)
+    oid = make_order(conn, None)
+    url = f"/admin/orders/{oid}/edit"
+    r = post(client, url, {"customer": "Walk-in", "phone": "+91 98450 77777", "item_name": "cake", "item_qty": "1",
+                           "item_unit": "kg"}, page=url)
+    assert r.status_code == 200 and "PIN" in r.text  # new customer -> starter PIN to send
+    row = om.get_order(conn, oid)
+    assert row["phone"] == "9845077777" and row["customer_id"] == auth.customer_by_phone(conn, "9845077777")["id"]
 
 
 def _chat_draft(conn, phone="98450 12345", name="Sneha"):

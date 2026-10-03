@@ -43,6 +43,12 @@ def test_no_phone():
     assert checker.NO_PHONE in flags(order(phone=""))
 
 
+def test_phone_that_is_not_10_digits():
+    """INT-14 / AUTH-15."""
+    assert flags(order(phone="98450 1234")) == [checker.BAD_PHONE]
+    assert checker.NO_PHONE not in flags(order(phone="98450 1234"))
+
+
 def test_zero_quantity():
     assert checker.ZERO_QTY in flags(order(items=[OrderItem(name="cake", quantity=0)]))
 
@@ -59,7 +65,7 @@ def test_duplicate_of_open_order_or_other_draft():
 
 
 def test_int15_flags_are_fixed_plain_sentences():
-    for name in ("NO_DATE", "UNCLEAR_DATE", "PAST_DATE", "NO_ADDRESS", "NO_PHONE", "ZERO_QTY", "NO_ITEMS",
+    for name in ("NO_DATE", "UNCLEAR_DATE", "PAST_DATE", "NO_ADDRESS", "NO_PHONE", "BAD_PHONE", "ZERO_QTY", "NO_ITEMS",
                  "BAD_TARGET", "DUPLICATE"):
         text = getattr(checker, name)
         assert text[0].isupper() and text.rstrip().endswith((".", "?"))

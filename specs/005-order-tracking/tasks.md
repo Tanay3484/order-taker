@@ -15,3 +15,4 @@
 - [x] T13. Conflict flag between chat draft and customer request; history entries (TRK-27, TRK-28)
 - [x] T14. Login info on order cards and the customers list (TRK-8, TRK-10)
 - [x] T15. Warm bakery palette + dark mode in `app.css`
+- [x] T16. Phone editable on Edit order, relinking the customer (TRK-29)

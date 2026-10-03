@@ -17,16 +17,17 @@ LOCK_MINUTES = 15
 _SCRYPT = dict(n=2**14, r=8, p=1, dklen=32)
 
 
+PHONE_RULE = "Phone numbers need to be 10 digits, like 98450 12345."  # AUTH-15
+
+
 def normalise_phone(raw: str | None) -> str | None:
-    """AUTH-3: one canonical form per number. Indian mobiles become their 10 digits."""
+    """AUTH-3: exactly 10 digits once a +91 / 91 / 0 prefix is removed; anything else isn't a phone."""
     digits = re.sub(r"\D", "", raw or "")
-    if len(digits) < 7:
-        return None
-    if len(digits) == 12 and digits.startswith("91") and digits[2] in "6789":
+    if len(digits) == 12 and digits.startswith("91"):
         digits = digits[2:]
-    elif len(digits) == 11 and digits.startswith("0") and digits[1] in "6789":
+    elif len(digits) == 11 and digits.startswith("0"):
         digits = digits[1:]
-    return digits
+    return digits if len(digits) == 10 else None
 
 
 def hash_secret(secret: str) -> str:
@@ -129,6 +130,8 @@ def login(conn: sqlite3.Connection, kind: str, ident: str, secret: str, at: date
     """Check credentials with lockout (AUTH-7). Raises LoginError with a safe message."""
     at = at or datetime.now()
     if kind == "customer":
+        if not normalise_phone(ident):
+            raise LoginError(PHONE_RULE)  # AUTH-15: not an attempt, says nothing about accounts
         user = customer_by_phone(conn, ident)
         bad = BAD_CUSTOMER
     else:

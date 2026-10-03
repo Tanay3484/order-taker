@@ -4,7 +4,7 @@ Status: Implemented
 
 ## Modules
 - `order_taker/auth.py`
-  - `normalise_phone(raw) -> str | None`: returns the last 10 digits for Indian mobiles (`[6-9]\d{9}`), otherwise digits only, or `None` for fewer than 7 digits.
+  - `normalise_phone(raw) -> str | None`: strips non-digits, removes a `91` prefix from 12 digits or a `0` from 11, and returns the 10 digits that remain, or `None` (AUTH-3). `PHONE_RULE` holds the AUTH-15 message so every form uses the same words.
   - `hash_secret(s) / verify_secret(s, h)`: `hashlib.scrypt` (n=2**14, r=8, p=1), 16-byte salt, stored as `scrypt$<salt_b64>$<hash_b64>`. Compared with `hmac.compare_digest`.
   - `new_pin() -> str`: `secrets.randbelow(10**6)`, zero-padded to 6 digits.
   - `ensure_customer(conn, name, phone) -> (user, pin | None)`: used when an order is accepted.
