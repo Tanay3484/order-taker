@@ -9,17 +9,18 @@
 <body>
 <header class="top">
   <a class="brand" href="/">🧁 {{ shop_name }}</a>
+  {% if tour %}<button type="button" class="link tour-start" data-tour-start>Show me around</button>{% endif %}
   {% if user %}
   <nav>
     {% if user.role == 'admin' %}
       <a href="/admin">Orders{% if changes_badge %} <span class="badge" aria-label="{{ changes_badge }} customer changes">{{ changes_badge }}</span>{% endif %}</a>
-      <a href="/admin/intake">Add orders</a>
-      <a href="/admin/prep">Prep list</a>
+      <a href="/admin/intake" data-tour="nav-add">Add orders</a>
+      <a href="/admin/prep" data-tour="nav-prep">Prep list</a>
       <a href="/admin/customers">Customers</a>
       <a href="/admin/settings">Settings</a>
     {% else %}
       <a href="/my-orders">My orders</a>
-      <a href="/change-pin">Change PIN</a>
+      <a href="/change-pin" data-tour="nav-pin">Change PIN</a>
     {% endif %}
     <form method="post" action="/logout" class="inline">
       <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -35,6 +36,10 @@
 {% block content %}{% endblock %}
 </main>
 <script src="/static/app.js"></script>
+{% if tour %}
+<script type="application/json" id="tour-data">{{ tour|tojson }}</script>
+<script src="/static/tour.js"></script>
+{% endif %}
 {% block scripts %}{% endblock %}
 </body>
 </html>

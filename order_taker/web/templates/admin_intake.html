@@ -9,22 +9,22 @@
   {% else %}
   <form method="post" action="/admin/intake" enctype="multipart/form-data" class="stack">
     <input type="hidden" name="csrf" value="{{ csrf }}">
-    <label>Paste the messages
+    <label data-tour="chat-box">Paste the messages
       <textarea name="text" rows="8" placeholder="[02/10/26, 9:14 PM] Priya: Hi aunty, 1 kg chocolate cake for Sunday..."></textarea></label>
     <label>…or upload an exported chat (.txt)
       <input type="file" name="file" accept=".txt,text/plain"></label>
     <p class="muted small">You can paste the whole chat each time. Messages I've already read are skipped.</p>
     {% if sample_chat %}
     <template id="sample-chat">{{ sample_chat }}</template>
-    <button type="button" class="btn small" data-sample-chat>Use the sample chat</button>
+    <button type="button" class="btn small" data-sample-chat data-tour="sample-chat">Use the sample chat</button>
     {% endif %}
-    <button class="btn primary" {% if helper_error %}disabled{% endif %}>Read the messages</button>
+    <button class="btn primary" data-tour="read-button" {% if helper_error %}disabled{% endif %}>Read the messages</button>
   </form>
   {% endif %}
 </section>
 
 {% if run_id %}
-<section class="card progress" id="progress" data-run="{{ run_id }}">
+<section class="card progress" id="progress" data-tour="progress" data-run="{{ run_id }}">
   <header class="progress-head">
     <h2>What's happening</h2>
     <span class="muted small"><span data-counter></span> <span data-timer></span></span>

@@ -53,6 +53,8 @@
 }
 
 * { box-sizing: border-box; }
+/* .btn, label etc. set their own display, which would otherwise beat the hidden attribute */
+[hidden] { display: none !important; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
   font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
@@ -224,3 +226,21 @@ table.prep .num { text-align: right; white-space: nowrap; font-variant-numeric: 
 .demo-banner { margin: 0; padding: 8px 16px; background: var(--warn-bg); color: var(--warn); text-align: center; font-size: .9rem; }
 .demo-login { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; padding: 10px 12px; border: 1px dashed var(--brand); border-radius: 10px; background: var(--brand-soft); }
 .demo-login code { font-size: 1rem; font-weight: 700; color: var(--brand); }
+
+/* guided tour (007) */
+.tour-start { color: var(--header-muted); font-size: .9rem; }
+.tour-spot {
+  position: fixed; z-index: 1000; pointer-events: none; border-radius: 12px;
+  box-shadow: 0 0 0 3px var(--brand), 0 0 0 9999px rgba(28, 21, 18, .55);
+  /* no transition: it would make the highlight trail behind the element while scrolling */
+}
+.tour-pop {
+  position: fixed; z-index: 1001; padding: 14px 16px; border-radius: var(--radius);
+  background: var(--card); color: var(--ink); border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+}
+.tour-pop .tour-count { margin: 0; color: var(--muted); font-size: .8rem; }
+.tour-pop .tour-title { margin: 2px 0 6px; font-size: 1.05rem; color: var(--brand); }
+.tour-pop .tour-text { margin: 0 0 12px; }
+.tour-buttons { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tour-pop.sheet { border-bottom: 4px solid var(--brand); }
