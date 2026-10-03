@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Check order{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{{ "Change to order #" ~ v.d.target_order_id if v.d.action == 'update' else "New order" }} from {{ v.d.sender }}</h1>
+  {% for e in errors %}<p class="error" role="alert">{{ e }}</p>{% endfor %}
+  {% for f in v.flags %}<p class="flag">⚠ {{ f }}</p>{% endfor %}
+  <details class="small" open><summary>Their messages</summary><blockquote class="raw">{{ v.d.raw_text }}</blockquote></details>
+  <form method="post" action="/admin/drafts/{{ v.d.id }}/edit" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    {% set admin = true %}
+    {% include "_order_form.html" %}
+    {% if confirm %}
+      <p class="flag">⚠ {{ confirm }}</p>
+      <input type="hidden" name="force" value="1">
+      <button class="btn primary">Yes, apply it</button>
+    {% else %}
+      <button class="btn primary">Accept</button>
+    {% endif %}
+    <a class="btn" href="/admin/intake">Back</a>
+  </form>
+</section>
+{% endblock %}

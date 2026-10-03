@@ -1,0 +1,65 @@
+{% set r = o.row %}
+{% set here = "/admin?tab=" ~ tab %}
+<article class="card order status-{{ r.status }}" id="order-{{ r.id }}">
+  <header class="order-head">
+    <div>
+      <strong>{{ r.customer_name or "Unknown" }}</strong>
+      <span class="muted small">#{{ r.id }}{% if r.phone %} · {{ r.phone }}{% endif %}</span>
+    </div>
+    <span class="pill">{{ r.status|admin_label }}</span>
+  </header>
+  {% for b in o.badges %}<span class="badge-soft">{{ b }}</span>{% endfor %}
+  {% if not r.phone %}<span class="badge-soft grey">No phone – customer can't track this</span>{% endif %}
+  <p class="items-line">{{ o['items']|items }}</p>
+  <p class="meta">
+    📅 {{ r.delivery_date|nice_date }}{% if r.delivery_time %} · {{ r.delivery_time }}{% endif %}<br>
+    📍 {{ r.address or "Pickup" }}
+    {% if r.notes %}<br>📝 {{ r.notes }}{% endif %}
+    {% if r.admin_note %}<br><span class="muted">🔒 {{ r.admin_note }}</span>{% endif %}
+  </p>
+  {% if o.customer %}
+  <div class="login-row">
+    {% if o.login_msg %}
+      <span>🔑 Login PIN <strong class="pin-inline">{{ o.customer.starter_pin }}</strong> <span class="muted small">(not used yet)</span></span>
+      <input type="hidden" id="login-msg-{{ r.id }}" value="{{ o.login_msg }}">
+      <span class="row">
+        <button type="button" class="btn small" data-copy="login-msg-{{ r.id }}">Copy message</button>
+        <a class="btn small" href="{{ wa_link(r.phone, o.login_msg) }}" target="_blank" rel="noopener">Send on WhatsApp</a>
+      </span>
+    {% else %}
+      <span class="muted">🔑 Has their own PIN</span>
+      <form method="post" action="/admin/customers/{{ o.customer.id }}/reset-pin?next={{ here|urlencode }}"
+            data-confirm="Give {{ r.customer_name or 'this customer' }} a new PIN? Their current one will stop working.">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="btn small">Send new login</button>
+      </form>
+    {% endif %}
+  </div>
+  {% endif %}
+  <div class="actions">
+    {% if o.next %}
+    <form method="post" action="/admin/orders/{{ r.id }}/advance?next={{ here|urlencode }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="btn primary big">{{ o.next }}</button>
+    </form>
+    {% endif %}
+    {% if o.can_undo %}
+    <form method="post" action="/admin/orders/{{ r.id }}/undo?next={{ here|urlencode }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="btn">Undo</button>
+    </form>
+    {% endif %}
+    <details class="menu">
+      <summary class="btn">More</summary>
+      <div class="menu-body">
+        <a class="btn" href="/admin/orders/{{ r.id }}/edit">Edit</a>
+        {% if o.can_cancel %}
+        <form method="post" action="/admin/orders/{{ r.id }}/cancel?next={{ here|urlencode }}" data-confirm="Cancel this order?">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn danger">Cancel order</button>
+        </form>
+        {% endif %}
+      </div>
+    </details>
+  </div>
+</article>

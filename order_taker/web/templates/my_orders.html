@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}My orders · {{ shop_name }}{% endblock %}
+
+{% macro order_card(o) %}
+<article class="card order status-{{ o.status }}">
+  <header class="order-head">
+    <strong>{{ o.delivery_date|nice_date }}{% if o.delivery_time %} · {{ o.delivery_time }}{% endif %}</strong>
+    <span class="muted small">Updated <time data-ago="{{ o.updated_at }}">{{ o.updated_at.replace("T", " ") }}</time></span>
+  </header>
+  <p class="items-line">{{ o['items'] }}</p>
+  <p class="meta">📍 {{ o.address or "Pickup" }}{% if o.notes %}<br>📝 {{ o.notes }}{% endif %}</p>
+
+  {% if o.status == 'cancelled' %}
+    <span class="pill grey">Cancelled</span>
+  {% else %}
+  <ol class="steps" aria-label="Order progress: {{ o.status_label }}">
+    {% for s in FLOW %}
+    <li class="{{ 'done' if loop.index0 < o.step else ('now' if loop.index0 == o.step else '') }}"
+        {% if loop.index0 == o.step %}aria-current="step"{% endif %}>
+      <span class="dot" aria-hidden="true"></span>
+      <span class="label">{{ customer_label(s, o.address != '') }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+  <p class="status-now">{{ o.status_label }}</p>
+  {% endif %}
+
+  {% if o.request_state == 'pending' %}
+    <p class="notice">{{ "Cancellation requested" if o.request_action == 'cancel' else "Change requested" }}. Waiting for {{ shop_name }} to approve.</p>
+    <form method="post" action="/my-orders/requests/{{ o.request_id }}/withdraw">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="link">Withdraw my request</button>
+    </form>
+  {% elif o.request_state == 'accepted' %}
+    <p class="ok">Your {{ "cancellation" if o.request_action == 'cancel' else "change" }} was approved.</p>
+  {% elif o.request_state == 'declined' %}
+    <p class="flag">Your {{ "cancellation" if o.request_action == 'cancel' else "change" }} wasn't approved.{% if o.request_reason %} {{ shop_name }} said: “{{ o.request_reason }}”{% endif %}</p>
+  {% endif %}
+
+  {% if o.can_change %}
+  <div class="actions">
+    <a class="btn primary" href="/my-orders/{{ o.id }}/change">Change order</a>
+    <a class="btn" href="/my-orders/{{ o.id }}/cancel">Cancel order</a>
+  </div>
+  {% if shop_whatsapp %}
+  <p class="small">Or <a href="{{ wa_link(shop_whatsapp, 'Hi, about my order for ' ~ (o.delivery_date|nice_date) ~ ': ' ~ o['items']) }}" target="_blank" rel="noopener">message {{ shop_name }} on WhatsApp</a></p>
+  {% endif %}
+  {% endif %}
+</article>
+{% endmacro %}
+
+{% block content %}
+{% if flash %}<p class="ok" role="status">{{ flash }}</p>{% endif %}
+<h1>Hi {{ user.name or "there" }} 👋</h1>
+<div data-orders>
+{% for o in active %}{{ order_card(o) }}{% else %}
+  <p class="empty">You don't have any upcoming orders.</p>
+{% endfor %}
+</div>
+{% if past %}
+<details class="past">
+  <summary>Past orders ({{ past|length }})</summary>
+  {% for o in past %}{{ order_card(o) }}{% endfor %}
+</details>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="/static/mine.js"></script>{% endblock %}

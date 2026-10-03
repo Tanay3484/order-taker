@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Change my order{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Change my order</h1>
+  <p class="notice">
+    {% if immediate %}Your changes are saved straight away.
+    {% else %}{{ shop_name }} has already confirmed this order, so they'll need to approve your change.{% endif %}
+  </p>
+  {% for e in errors %}<p class="error" role="alert">{{ e }}</p>{% endfor %}
+  <form method="post" action="/my-orders/{{ row.id }}/change" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    {% set admin = false %}
+    {% include "_order_form.html" %}
+    <div class="row">
+      <button class="btn primary">{{ "Save changes" if immediate else "Send change request" }}</button>
+      <a class="btn" href="/my-orders">Back</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

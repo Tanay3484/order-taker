@@ -1,0 +1,60 @@
+{# One draft from a chat (INT-17). Needs v from draft_view. #}
+{% set d = v.d %}
+<article class="card draft" id="draft-{{ d.id }}" data-draft="{{ d.id }}">
+  <header class="order-head">
+    <strong>{{ d.sender }}</strong>
+    <span class="pill">
+      {%- if d.action == 'new' %}New order{% elif d.action == 'update' %}Change to #{{ d.target_order_id }}
+      {%- elif d.action == 'cancel' %}Cancel #{{ d.target_order_id }}{% else %}Needs a reply{% endif -%}
+    </span>
+  </header>
+
+  {% if d.action == 'question' %}
+    <blockquote class="raw">{{ d.raw_text }}</blockquote>
+  {% elif d.action == 'cancel' %}
+    {% if v.current %}<p>Cancel: {{ v.current['items']|items }} ({{ v.current.delivery_date|nice_date }})</p>{% endif %}
+  {% elif d.action == 'update' %}
+    {% if v.changes %}
+    <table class="diff">
+      {% for c in v.changes %}
+      <tr><th>{{ c.label }}</th><td class="old">{{ c.old }}</td><td aria-hidden="true">→</td><td class="new">{{ c.new }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}<p class="muted small">No differences found.</p>{% endif %}
+  {% elif v.order %}
+    <p class="items-line">{{ v.order['items']|items }}</p>
+    <p class="meta">
+      📅 {{ v.order.delivery_date|nice_date }}{% if v.order.delivery_time %} · {{ v.order.delivery_time }}{% endif %}<br>
+      📍 {{ v.order.address or "Pickup / not given" }}
+      {% if v.order.phone %}<br>📞 {{ v.order.phone }}{% endif %}
+      {% if v.order.notes %}<br>📝 {{ v.order.notes }}{% endif %}
+    </p>
+  {% endif %}
+
+  {% for f in v.flags %}<p class="flag">⚠ {{ f }}</p>{% endfor %}
+
+  {% if d.action != 'question' %}
+  <details class="small"><summary>Show their messages</summary><blockquote class="raw">{{ d.raw_text }}</blockquote></details>
+  {% endif %}
+
+  <div class="actions">
+    {% if d.action == 'question' %}
+      <form method="post" action="/admin/drafts/{{ d.id }}/accept">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="btn primary">I've replied</button>
+      </form>
+    {% else %}
+      {% if v.order or d.action == 'cancel' %}
+      <form method="post" action="/admin/drafts/{{ d.id }}/accept">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="btn primary">Accept</button>
+      </form>
+      {% endif %}
+      {% if d.action != 'cancel' %}<a class="btn" href="/admin/drafts/{{ d.id }}/edit">Edit, then accept</a>{% endif %}
+      <form method="post" action="/admin/drafts/{{ d.id }}/discard">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="btn danger">Discard</button>
+      </form>
+    {% endif %}
+  </div>
+</article>

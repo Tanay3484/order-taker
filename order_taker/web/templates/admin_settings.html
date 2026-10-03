@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Settings</h1>
+  {% if saved %}<p class="ok" role="status">Saved.</p>{% endif %}
+  {% for e in errors %}<p class="error" role="alert">{{ e }}</p>{% endfor %}
+  <form method="post" action="/admin/settings" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Shop name <input name="shop_name" value="{{ shop_name }}" required></label>
+    <label>Shop WhatsApp number <input name="shop_whatsapp" value="{{ shop_whatsapp }}" required inputmode="tel"></label>
+    <button class="btn primary">Save</button>
+  </form>
+</section>
+{% endblock %}

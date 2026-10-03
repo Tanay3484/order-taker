@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Add orders · {{ shop_name }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Add orders from WhatsApp</h1>
+  {% if helper_error %}<p class="error" role="alert">{{ helper_error }}</p>{% endif %}
+  {% if running %}
+    <p class="muted">I'm still working on the last batch. New messages can be added when it's done.</p>
+  {% else %}
+  <form method="post" action="/admin/intake" enctype="multipart/form-data" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Paste the messages
+      <textarea name="text" rows="8" placeholder="[02/10/26, 9:14 PM] Priya: Hi aunty, 1 kg chocolate cake for Sunday..."></textarea></label>
+    <label>…or upload an exported chat (.txt)
+      <input type="file" name="file" accept=".txt,text/plain"></label>
+    <p class="muted small">You can paste the whole chat each time. Messages I've already read are skipped.</p>
+    <button class="btn primary" {% if helper_error %}disabled{% endif %}>Read the messages</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if run_id %}
+<section class="card progress" id="progress" data-run="{{ run_id }}">
+  <header class="progress-head">
+    <h2>What's happening</h2>
+    <span class="muted small"><span data-counter></span> <span data-timer></span></span>
+  </header>
+  <ol class="feed" aria-live="polite" aria-label="Progress" data-feed></ol>
+  <button type="button" class="link small" data-toggle hidden>Show details</button>
+</section>
+{% elif last %}
+<p class="notice">Last time: {{ last.summary }}</p>
+{% endif %}
+
+<section id="drafts" aria-label="Orders to check">
+  {% if drafts %}<h2>To check</h2>{% endif %}
+  {% for v in drafts %}{% include "_draft_card.html" %}{% endfor %}
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/progress.js"></script>{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Orders · {{ shop_name }}{% endblock %}
+{% block content %}
+{% if changes %}
+<section class="card changes">
+  <h2>Customer changes {% if changes_badge %}<span class="badge">{{ changes_badge }}</span>{% endif %}</h2>
+  {% for v in changes %}{% include "_change_entry.html" %}{% endfor %}
+</section>
+{% endif %}
+
+{% if pending_drafts %}
+<p class="notice"><a href="/admin/intake">{{ pending_drafts }} new order{{ "s" if pending_drafts != 1 }} from WhatsApp waiting for you to check →</a></p>
+{% endif %}
+
+<div class="tabs" role="tablist">
+  {% for key, label in tabs %}
+  <a role="tab" href="/admin?tab={{ key }}" aria-selected="{{ 'true' if key == tab else 'false' }}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<p class="row small">
+  <a href="/admin/orders.csv?tab={{ tab }}">Download these orders (CSV)</a>
+</p>
+
+{% for o in orders %}
+  {% include "_order_card.html" %}
+{% else %}
+  <p class="empty">No orders here.</p>
+{% endfor %}
+{% endblock %}

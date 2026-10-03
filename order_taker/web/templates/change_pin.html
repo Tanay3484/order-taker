@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Choose your PIN{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>{{ "Choose your own PIN" if forced else "Change your PIN" }}</h1>
+  {% if forced %}<p class="muted">Welcome! Before you see your orders, please pick a PIN only you know.</p>{% endif %}
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <form method="post" action="/change-pin" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>New PIN <span class="hint">4 to 6 numbers</span>
+      <input name="pin" type="password" required inputmode="numeric" pattern="[0-9]{4,6}" autocomplete="new-password"></label>
+    <label>Type it again
+      <input name="pin2" type="password" required inputmode="numeric" pattern="[0-9]{4,6}" autocomplete="new-password"></label>
+    <button class="btn primary">Save my PIN</button>
+  </form>
+</section>
+{% endblock %}

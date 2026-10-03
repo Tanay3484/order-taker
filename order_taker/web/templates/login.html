@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Log in · {{ shop_name }}{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <div class="tabs" role="tablist">
+    <a role="tab" href="/login?tab=customer" aria-selected="{{ 'true' if tab == 'customer' else 'false' }}">I'm a customer</a>
+    <a role="tab" href="/login?tab=admin" aria-selected="{{ 'true' if tab == 'admin' else 'false' }}">Shop owner</a>
+  </div>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <form method="post" action="/login" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="hidden" name="kind" value="{{ tab }}">
+    {% if tab == 'customer' %}
+      <label>Your phone number
+        <input name="ident" value="{{ ident }}" required inputmode="tel" autocomplete="tel" placeholder="98450 12345"></label>
+      <label>PIN <span class="hint">the shop sent this to you on WhatsApp</span>
+        <input name="secret" type="password" required inputmode="numeric" autocomplete="current-password"></label>
+    {% else %}
+      <label>Username
+        <input name="ident" value="{{ ident }}" required autocomplete="username" autocapitalize="none"></label>
+      <label>Password
+        <input name="secret" type="password" required autocomplete="current-password"></label>
+    {% endif %}
+    <button class="btn primary">Log in</button>
+  </form>
+  {% if tab == 'customer' %}<p class="muted small">Forgot your PIN? Message the shop and they'll give you a new one.</p>{% endif %}
+</section>
+{% endblock %}

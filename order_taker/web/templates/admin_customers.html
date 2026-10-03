@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Customers</h1>
+  {% for c in customers %}
+  <div class="customer-row">
+    <div>
+      <strong>{{ c.name or "No name" }}</strong><br>
+      <span class="muted small">{{ c.phone }} · {{ c.order_count }} order{{ "s" if c.order_count != 1 }}</span><br>
+      <span class="small">{% if c.starter_pin %}🔑 Login PIN <strong class="pin-inline">{{ c.starter_pin }}</strong> <span class="muted">(not used yet)</span>{% else %}<span class="muted">🔑 Has their own PIN</span>{% endif %}</span>
+    </div>
+    <form method="post" action="/admin/customers/{{ c.id }}/reset-pin" data-confirm="Give {{ c.name or 'this customer' }} a new PIN? Their old one will stop working.">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="btn small">Reset PIN</button>
+    </form>
+  </div>
+  {% else %}
+  <p class="empty">No customers yet. They're added when you accept an order that has a phone number.</p>
+  {% endfor %}
+</section>
+{% endblock %}

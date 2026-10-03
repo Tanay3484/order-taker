@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Customer changes{% endblock %}
+{% block content %}
+<section class="card changes">
+  <h1>Customer changes</h1>
+  {% for v in changes %}{% include "_change_entry.html" %}{% else %}<p class="empty">No changes from customers.</p>{% endfor %}
+</section>
+{% endblock %}

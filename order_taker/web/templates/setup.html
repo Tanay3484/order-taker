@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Set up your shop{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Set up your shop</h1>
+  <p class="muted">This is a one-time step. You'll use the username and password to log in as the shop owner.</p>
+  {% for e in errors %}<p class="error">{{ e }}</p>{% endfor %}
+  <form method="post" action="/setup" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Your name <input name="name" value="{{ form.name }}" required autocomplete="name"></label>
+    <label>Username <input name="username" value="{{ form.username }}" required autocomplete="username" autocapitalize="none"></label>
+    <label>Password <span class="hint">at least 8 characters</span>
+      <input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+    <label>Shop name <input name="shop_name" value="{{ form.shop_name }}" required placeholder="e.g. Asha's Bakes"></label>
+    <label>Shop WhatsApp number <span class="hint">customers will message this number</span>
+      <input name="shop_whatsapp" value="{{ form.shop_whatsapp }}" required inputmode="tel" placeholder="98450 12345"></label>
+    <button class="btn primary">Create my shop</button>
+  </form>
+</section>
+{% endblock %}

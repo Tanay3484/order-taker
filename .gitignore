@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.csv
+# real customer chats and the database stay off GitHub
+chats/
+data/

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ row.id }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Order #{{ row.id }} <span class="pill">{{ row.status|admin_label }}</span></h1>
+  {% for e in errors %}<p class="error" role="alert">{{ e }}</p>{% endfor %}
+  <form method="post" action="/admin/orders/{{ row.id }}/edit" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    {% set admin = true %}
+    {% set admin_note = row.admin_note %}
+    {% include "_order_form.html" %}
+    <div class="row">
+      <button class="btn primary">Save</button>
+      <a class="btn" href="/admin">Back</a>
+    </div>
+  </form>
+</section>
+
+{% if not row.phone %}
+<section class="card">
+  <h2>Add their phone number</h2>
+  <p class="muted">So they can log in and track this order.</p>
+  <form method="post" action="/admin/orders/{{ row.id }}/phone" class="row">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input name="phone" inputmode="tel" placeholder="98450 12345" required aria-label="Phone number">
+    <button class="btn primary">Add</button>
+  </form>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>History</h2>
+  <ol class="history">
+    {% for h in history %}
+    <li><time data-at="{{ h.at }}">{{ h.at.replace("T", " ") }}</time> · {{ h.status|admin_label }}{% if h.note %} · {{ h.note }}{% endif %}
+      {% if h.by_name %}<span class="muted">({{ h.by_name }})</span>{% endif %}</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

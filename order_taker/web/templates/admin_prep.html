@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Prep list · {{ day|nice_date }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>What to make: {{ day|nice_date }}</h1>
+  <form method="get" action="/admin/prep" class="row">
+    <input type="date" name="day" value="{{ day }}" aria-label="Day">
+    <button class="btn">Show</button>
+  </form>
+  {% if rows %}
+  <table class="prep">
+    <thead><tr><th>Item</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for r in rows %}<tr><td>{{ r.item }}</td><td class="num">{{ r.total }} {{ r.unit }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="empty">Nothing to make on this day.</p>{% endif %}
+  <p class="muted small">Cancelled orders aren't counted.</p>
+</section>
+{% endblock %}

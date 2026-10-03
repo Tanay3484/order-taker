@@ -1,0 +1,35 @@
+{# Shared order fields. Needs: order (Order). Optional: admin (bool), admin_note (str). #}
+{% if admin %}
+<div class="grid2">
+  <label>Customer name <input name="customer" value="{{ order.customer }}" required></label>
+  <label>Phone <input name="phone" value="{{ order.phone }}" inputmode="tel" placeholder="Optional"></label>
+</div>
+{% endif %}
+<fieldset class="items" data-items>
+  <legend>Items</legend>
+  {% for it in order['items'] %}
+  <div class="item-row">
+    <input name="item_name" value="{{ it.name }}" aria-label="Item" placeholder="Item">
+    <input name="item_qty" value="{{ it.quantity|qty }}" aria-label="How many" inputmode="decimal" class="qty">
+    <input name="item_unit" value="{{ it.unit }}" aria-label="Unit" placeholder="kg, box…" class="unit">
+    <button type="button" class="link remove" data-remove-item aria-label="Remove this item">Remove</button>
+  </div>
+  {% endfor %}
+  <div class="item-row">
+    <input name="item_name" aria-label="Item" placeholder="{{ 'Add an item' if order['items'] else 'Item' }}">
+    <input name="item_qty" aria-label="How many" inputmode="decimal" class="qty" placeholder="1">
+    <input name="item_unit" aria-label="Unit" placeholder="kg, box…" class="unit">
+    <button type="button" class="link remove" data-remove-item aria-label="Remove this item">Remove</button>
+  </div>
+  <button type="button" class="btn small" data-add-item>+ Add another item</button>
+</fieldset>
+<div class="grid2">
+  <label>Date <input name="delivery_date" type="date" value="{{ order.delivery_date if order.delivery_date|length == 10 else '' }}" {% if not admin %}min="{{ today }}"{% endif %}></label>
+  <label>Time <input name="delivery_time" value="{{ order.delivery_time }}" placeholder="e.g. 4 pm, evening"></label>
+</div>
+<label class="check"><input type="checkbox" name="pickup" data-pickup {% if not order.address %}checked{% endif %}> Pickup instead of delivery</label>
+<label data-address>Delivery address <textarea name="address" rows="2">{{ order.address }}</textarea></label>
+<label>Notes <span class="hint">eggless, message on cake…</span> <textarea name="notes" rows="2">{{ order.notes }}</textarea></label>
+{% if admin and admin_note is defined %}
+<label>Private note <span class="hint">only you can see this</span> <textarea name="admin_note" rows="2">{{ admin_note }}</textarea></label>
+{% endif %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card narrow">
+  <h1>Send {{ name or "the customer" }} their login</h1>
+  <p>Their PIN is <strong class="pin">{{ pin }}</strong>.</p>
+  <p class="muted small">You can find it again on their order card until they choose their own PIN.</p>
+  <label>Message to send on WhatsApp
+    <textarea id="share-text" rows="4" readonly>{{ message }}</textarea></label>
+  <p class="row">
+    <button class="btn" type="button" data-copy="share-text">Copy message</button>
+    <a class="btn primary" href="{{ wa_link(phone, message) }}" target="_blank" rel="noopener">Open in WhatsApp</a>
+  </p>
+  <p class="muted small">They'll be asked to choose their own PIN the first time they log in. After that, only they will know it.</p>
+  <p><a class="btn" href="{{ back }}">Done</a></p>
+</section>
+{% endblock %}

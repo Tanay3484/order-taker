@@ -1,0 +1,6 @@
+CREATE TABLE settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL DEFAULT ''
+);
+
+ALTER TABLE orders ADD COLUMN admin_note TEXT NOT NULL DEFAULT '';
