@@ -1,3 +1,15 @@
+---
+title: Order Taker
+emoji: 🧁
+colorFrom: pink
+colorTo: yellow
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+short_description: Local AI agents turn WhatsApp orders into a bakery board
+---
+
 # Order Taker 🧁
 
 Turns messy WhatsApp order messages into clean orders for a small home business. The shop owner pastes the chat, a team of small AI helpers reads it, and customers can log in from their phones to see where their order is.
@@ -80,6 +92,23 @@ Benchmark on your machine (uses a throwaway database):
 ```bash
 python scripts/bench_intake.py
 ```
+
+## Public demo on Hugging Face Spaces
+
+The block at the top of this README is what Hugging Face reads: a Docker Space listening on port 7860. The container runs Ollama and the app together. Set these in the Space under **Settings → Variables and secrets**:
+
+| Name | Type | Value |
+|---|---|---|
+| `ORDER_ADMIN_USERNAME` | Secret | shop owner login; this also switches `/setup` off |
+| `ORDER_ADMIN_PASSWORD` | Secret | a **throwaway** password (demo mode shows it on the login page) |
+| `ORDER_SHOP_NAME`, `ORDER_SHOP_WHATSAPP` | Variable | shop details |
+| `ORDER_PUBLIC_URL` | Variable | `https://<user>-<space>.hf.space` |
+| `ORDER_DEMO` | Variable | `1`: banner, example orders, demo logins, sample-chat button |
+| `ORDER_SECURE_COOKIES` | Variable | `1` |
+
+Share the direct `…hf.space` link rather than the huggingface.co page. That page shows the app inside a frame, and browsers block login cookies there.
+
+The free Space disk resets on restart, so the demo starts fresh with example data each time. A real shop should run it on their own laptop instead.
 
 ## Tests
 

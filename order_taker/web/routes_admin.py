@@ -52,6 +52,14 @@ def login_message(name: str, url: str, pin: str) -> str:
     return f"Hi {name}, you can track your order at {url}. Login: your phone number, PIN {pin}"
 
 
+def order_errors(order: Order) -> list[str]:
+    """Checks for the admin's order forms. A phone may be left empty, but if given it must be 10 digits (AUTH-15)."""
+    errors = [] if order.items else ["An order needs at least one item."]
+    if order.phone.strip() and not auth.normalise_phone(order.phone):
+        errors.append(auth.PHONE_RULE)
+    return errors
+
+
 def order_view(conn, row, public_url: str = "") -> dict:
     customer = auth.get_user(conn, row["customer_id"]) if row["customer_id"] else None
     starter = customer["starter_pin"] if customer is not None else None
@@ -155,11 +163,16 @@ async def edit_order_submit(request: Request, order_id: int, conn=Depends(get_co
         raise HTTPException(404)
     form = await request.form()
     order = order_from_form(form, om.to_model(conn, row))
-    errors = [] if order.items else ["An order needs at least one item."]
+    errors = order_errors(order)
     if errors:
         return render(request, conn, "admin_order_edit.html", status_code=400, user=user, row=row, order=order,
                       history=om.history(conn, order_id), errors=errors)
     om.admin_edit(conn, order_id, order, str(form.get("admin_note", "")), user["id"])
+    new_phone = auth.normalise_phone(order.phone)
+    if new_phone and new_phone != row["phone"]:  # TRK-29: relink to the customer with that number
+        pin = om.link_phone(conn, order_id, new_phone)
+        if pin:
+            return _pin_page(request, conn, user, order.customer, new_phone, pin)
     return RedirectResponse("/admin", 303)
 
 
@@ -196,7 +209,8 @@ async def intake_page(request: Request, run: int | None = None, conn=Depends(get
         last = conn.execute("SELECT * FROM intake_runs WHERE finished_at IS NOT NULL ORDER BY id DESC LIMIT 1").fetchone()
     drafts = [draft_view(conn, d) for d in om.pending_chat_drafts(conn)]
     return render(request, conn, "admin_intake.html", user=user, helper_error="" if healthy else HELPER_DOWN,
-                  run_id=run_id, running=active is not None, last=last, drafts=drafts)
+                  run_id=run_id, running=active is not None, last=last, drafts=drafts,
+                  sample_chat=request.app.state.sample_chat)
 
 
 @router.post("/intake", dependencies=[Depends(check_csrf)])
@@ -206,6 +220,9 @@ async def intake_start(request: Request, text: str = Form(""), file: UploadFile 
         text = (await file.read()).decode("utf-8", errors="ignore")
     if not text.strip():
         return _error(request, conn, user, "Paste some messages or upload an exported chat first.", "/admin/intake")
+    if len(text) > request.app.state.settings.max_chat_chars:  # HOST-7
+        return _error(request, conn, user, "That's a very long chat. Please paste just the recent messages.",
+                      "/admin/intake")
     client = request.app.state.ollama
     if not await client.healthy():  # PLT-6
         return _error(request, conn, user, HELPER_DOWN, "/admin/intake")
@@ -291,9 +308,10 @@ async def edit_draft_submit(request: Request, draft_id: int, conn=Depends(get_co
     form = await request.form()
     order = order_from_form(form)
     v = draft_view(conn, d)
-    if not order.items:
+    errors = order_errors(order)
+    if errors:
         return render(request, conn, "admin_draft_edit.html", status_code=400, user=user, v=v, order=order,
-                      errors=["An order needs at least one item."])
+                      errors=errors)
     force = form.get("force") == "1"
     if v["target"] is not None and v["target"]["status"] in ("preparing", "ready") and not force:
         # TRK-2: ask on this form so the edits aren't lost
@@ -405,7 +423,7 @@ def settings_submit(request: Request, shop_name: str = Form(""), shop_whatsapp: 
     if not shop_name.strip():
         errors.append("Please enter your shop's name.")
     if not auth.normalise_phone(shop_whatsapp):
-        errors.append("Please enter the shop's WhatsApp number.")
+        errors.append("The shop's WhatsApp number: " + auth.PHONE_RULE)
     if not errors:
         db.set_setting(conn, "shop_name", shop_name.strip())
         db.set_setting(conn, "shop_whatsapp", auth.normalise_phone(shop_whatsapp))

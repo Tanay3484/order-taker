@@ -8,6 +8,7 @@ These rules apply to every spec, design and line of code. If a feature needs to 
 - Customer names, phone numbers, addresses and chats are processed and stored **only on the business owner's machine**.
 - No external APIs, analytics, CDNs or telemetry. All CSS and JS is served from the app itself.
 - The app is reachable only on the local network (same Wi‑Fi). Exposing it to the internet needs a spec change.
+  - *Exception (spec 006):* a public **demo** deployment with example data only, a banner asking visitors not to enter real personal details, and an admin login set by the deployer.
 - Real chats and the database stay out of git (`chats/`, `data/` are git-ignored).
 
 ## 2. Spec first

@@ -219,3 +219,8 @@ table.prep th, table.prep td { padding: 8px 4px; border-bottom: 1px solid var(--
 table.prep th { color: var(--muted); font-weight: 600; }
 table.prep .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .history { padding-left: 1.2em; font-size: .92rem; }
+
+/* hosted demo (006) */
+.demo-banner { margin: 0; padding: 8px 16px; background: var(--warn-bg); color: var(--warn); text-align: center; font-size: .9rem; }
+.demo-login { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; padding: 10px 12px; border: 1px dashed var(--brand); border-radius: 10px; background: var(--brand-soft); }
+.demo-login code { font-size: 1rem; font-weight: 700; color: var(--brand); }

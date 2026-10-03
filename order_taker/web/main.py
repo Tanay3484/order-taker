@@ -15,7 +15,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
-from .. import db
+from .. import bootstrap, db
 from .. import orders as orders_mod
 from ..agents.ollama import OllamaClient
 from ..config import Settings, get_settings
@@ -56,12 +56,15 @@ def create_app(settings: Settings | None = None, client=None) -> FastAPI:
     settings = settings or get_settings()
     conn = db.connect(settings.db_path)
     db.migrate(conn)  # PLT-3, PLT-4
+    bootstrap.apply(conn, settings)  # 006: admin from env, demo data
     conn.close()
 
     app = FastAPI(title="Order Taker", docs_url=None, redoc_url=None, openapi_url=None)
     app.state.settings = settings
     app.state.ollama = client or OllamaClient(settings.ollama_url, settings.parallel)
-    app.state.public_url = os.getenv("ORDER_PUBLIC_URL") or f"http://{net.lan_ip()}:{settings.port}"
+    app.state.public_url = (os.getenv("ORDER_PUBLIC_URL") or f"http://{net.lan_ip()}:{settings.port}").rstrip("/")
+    sample = HERE.parent.parent / "samples" / "sample_chat.txt"
+    app.state.sample_chat = sample.read_text(encoding="utf-8") if settings.demo and sample.exists() else ""
 
     templates = Jinja2Templates(directory=str(HERE / "templates"))
     templates.env.filters.update(
@@ -73,11 +76,17 @@ def create_app(settings: Settings | None = None, client=None) -> FastAPI:
     app.state.templates = templates
 
     app.add_middleware(SessionMiddleware, secret_key=_secret_key(settings), session_cookie="ot_session",
-                       max_age=deps.CUSTOMER_SESSION_SECONDS, same_site="lax", https_only=False)
+                       max_age=deps.CUSTOMER_SESSION_SECONDS, same_site=settings.samesite,
+                       https_only=settings.secure_cookies)  # HOST-2
     app.mount("/static", StaticFiles(directory=str(HERE / "static")), name="static")
     app.include_router(routes_auth.router)
     app.include_router(routes_admin.router)
     app.include_router(routes_customer.router)
+
+    @app.get("/healthz", include_in_schema=False)
+    async def healthz():
+        """HOST-3: always 200 so a slow model start never gets the container restarted."""
+        return {"ok": True, "ai_ready": await app.state.ollama.healthy()}
 
     @app.exception_handler(deps.LoginRequired)
     async def _login(request: Request, exc):

@@ -14,6 +14,7 @@ UNCLEAR_DATE = "The delivery date isn't clear."
 PAST_DATE = "The delivery date is in the past."
 NO_ADDRESS = "Delivery or pickup? No address was given."
 NO_PHONE = "There's no phone number, so the customer can't track this order."
+BAD_PHONE = "The phone number doesn't look right. It needs 10 digits."
 ZERO_QTY = "One of the items has a quantity of 0."
 NO_ITEMS = "No items were found."
 BAD_TARGET = "This points to an order that isn't open any more."
@@ -52,7 +53,7 @@ def check(action: DraftAction, sender_open: dict[int, Order], others: list[Order
     if not o.address.strip() and not _PICKUP.search(f"{o.notes} {o.delivery_time}"):
         flags.append(NO_ADDRESS)
     if not normalise_phone(o.phone):
-        flags.append(NO_PHONE)
+        flags.append(BAD_PHONE if o.phone.strip() else NO_PHONE)
     if o.items and _signature(o) in {_signature(x) for x in others}:
         flags.append(DUPLICATE)
     return flags

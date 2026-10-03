@@ -43,6 +43,7 @@ Warm bakery palette: cream background, cocoa text and header, raspberry for prim
 | TRK-7 | THE SYSTEM SHALL show an orders board with tabs **Today**, **Tomorrow**, **Upcoming**, **No date** and **Past**, each sorted by delivery time. |
 | TRK-8 | Each order card SHALL show the customer, items, time, address or "Pickup", notes, status, and one primary button for the next step (e.g. **Start preparing**), plus a menu with **Cancel order** and **Edit**. Orders linked to a customer SHALL also show their login: the starter PIN with **Copy** and **Send on WhatsApp** while it's unused (AUTH-13), otherwise "Has their own PIN" and a **Send new login** button (AUTH-14). |
 | TRK-9 | THE SYSTEM SHALL show the prep list for any chosen day (total of each item, excluding cancelled orders) and offer a CSV download of the orders shown. |
+| TRK-29 | On the admin **Edit order** page, the phone SHALL be editable. Changing it SHALL relink the order to the customer with that number, creating the account and a starter PIN if needed (as in AUTH-5). *(Bug found during build: the phone field was shown but ignored.)* |
 | TRK-10 | The admin SHALL see a list of customers with their phone, number of orders, their starter PIN if still unused (AUTH-13), and **Reset PIN** (AUTH-8). |
 | TRK-11 | On first setup, the admin SHALL enter the shop's name and WhatsApp number. These are used on customer pages (TRK-14) and can be changed later in Settings. |
 

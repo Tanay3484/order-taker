@@ -28,6 +28,9 @@
   </nav>
   {% endif %}
 </header>
+{% if demo %}
+<p class="demo-banner" role="note">This is a demo. Please don't enter real names, phone numbers or addresses. Everything resets when the demo restarts.</p>
+{% endif %}
 <main>
 {% block content %}{% endblock %}
 </main>

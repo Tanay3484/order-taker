@@ -12,3 +12,4 @@
 - [x] T10. README: Ollama tuning section (`OLLAMA_NUM_PARALLEL`, low-RAM advice)
 - [x] T11. `agents/dates.py` resolver + extractor post-processing for dates and phones (INT-21, INT-22)
 - [x] T12. Extractor also returns `kind`; master skips the sorter when there's no smaller model (INT-9 amended)
+- [x] T13. Checker flag for a phone that isn't 10 digits (INT-14)

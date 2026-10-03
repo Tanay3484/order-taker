@@ -1,0 +1,13 @@
+# Never ship the real database, chats or session key into an image
+data/
+chats/
+*.db
+secret.key
+
+.venv/
+.git/
+.github/
+.vscode/
+__pycache__/
+.pytest_cache/
+*.csv

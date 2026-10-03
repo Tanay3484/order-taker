@@ -43,7 +43,7 @@ Today the whole chat goes to one 7B model call. It takes a minute or more, it re
 ### Checker agent
 | ID | Criterion |
 |---|---|
-| INT-14 | THE SYSTEM SHALL flag, in plain English, any draft that has: no delivery date; a date in the past; no address and no sign of pickup ("Delivery or pickup?"); no phone; a quantity of 0; an `update`/`cancel` pointing at an order that isn't open; or the same customer + date + items as another draft or open order ("Looks like a duplicate"). |
+| INT-14 | THE SYSTEM SHALL flag, in plain English, any draft that has: no delivery date; a date in the past; no address and no sign of pickup ("Delivery or pickup?"); no phone; a phone that isn't 10 digits ("The phone number doesn't look right. It needs 10 digits."); a quantity of 0; an `update`/`cancel` pointing at an order that isn't open; or the same customer + date + items as another draft or open order ("Looks like a duplicate"). |
 | INT-15 | Flags SHALL NOT block acceptance. They're shown on the draft for the admin to judge. |
 
 ### Review

@@ -277,7 +277,7 @@ def link_phone(conn, order_id: int, phone: str) -> str | None:
     """AUTH-5: add a phone to an order later; links/creates the customer. Returns a new PIN if one was made."""
     norm = auth.normalise_phone(phone)
     if not norm:
-        raise OrderError("That doesn't look like a phone number.")
+        raise OrderError(auth.PHONE_RULE)
     with transaction(conn, immediate=True):
         row = get_order(conn, order_id)
         user, pin = auth.ensure_customer(conn, row["customer_name"], norm)
