@@ -196,7 +196,8 @@ async def intake_page(request: Request, run: int | None = None, conn=Depends(get
         last = conn.execute("SELECT * FROM intake_runs WHERE finished_at IS NOT NULL ORDER BY id DESC LIMIT 1").fetchone()
     drafts = [draft_view(conn, d) for d in om.pending_chat_drafts(conn)]
     return render(request, conn, "admin_intake.html", user=user, helper_error="" if healthy else HELPER_DOWN,
-                  run_id=run_id, running=active is not None, last=last, drafts=drafts)
+                  run_id=run_id, running=active is not None, last=last, drafts=drafts,
+                  sample_chat=request.app.state.sample_chat)
 
 
 @router.post("/intake", dependencies=[Depends(check_csrf)])
@@ -206,6 +207,9 @@ async def intake_start(request: Request, text: str = Form(""), file: UploadFile 
         text = (await file.read()).decode("utf-8", errors="ignore")
     if not text.strip():
         return _error(request, conn, user, "Paste some messages or upload an exported chat first.", "/admin/intake")
+    if len(text) > request.app.state.settings.max_chat_chars:  # HOST-7
+        return _error(request, conn, user, "That's a very long chat. Please paste just the recent messages.",
+                      "/admin/intake")
     client = request.app.state.ollama
     if not await client.healthy():  # PLT-6
         return _error(request, conn, user, HELPER_DOWN, "/admin/intake")

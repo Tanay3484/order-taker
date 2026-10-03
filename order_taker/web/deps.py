@@ -10,7 +10,7 @@ from datetime import date
 
 from fastapi import Depends, HTTPException, Request
 
-from .. import auth, db
+from .. import auth, bootstrap, db
 from .. import orders as orders_mod
 
 ADMIN_SESSION_SECONDS = 12 * 3600
@@ -88,6 +88,16 @@ async def check_csrf(request: Request) -> None:
         raise HTTPException(400, "This form has expired. Please go back, refresh the page and try again.")
 
 
+def demo_logins(settings) -> dict:
+    """HOST-6: the logins shown on the login page in demo mode."""
+    if not settings.demo:
+        return {}
+    logins = {"customer": (bootstrap.DEMO_CUSTOMER["phone"], bootstrap.DEMO_CUSTOMER["pin"])}
+    if settings.env_admin:
+        logins["admin"] = (settings.admin_username, settings.admin_password)
+    return logins
+
+
 def render(request: Request, conn: sqlite3.Connection, template: str, status_code: int = 200, **ctx):
     templates = request.app.state.templates
     user = ctx.pop("user", None)
@@ -97,5 +107,7 @@ def render(request: Request, conn: sqlite3.Connection, template: str, status_cod
         "shop_name": db.get_setting(conn, "shop_name", "Order Taker"),
         "changes_badge": orders_mod.changes_badge(conn) if user is not None and user["role"] == "admin" else 0,
         "today": date.today().isoformat(),
+        "demo": request.app.state.settings.demo,
+        "demo_logins": demo_logins(request.app.state.settings),
     }
     return templates.TemplateResponse(request, template, {**base, **ctx}, status_code=status_code)

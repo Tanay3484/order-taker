@@ -24,5 +24,17 @@
     <button class="btn primary">Log in</button>
   </form>
   {% if tab == 'customer' %}<p class="muted small">Forgot your PIN? Message the shop and they'll give you a new one.</p>{% endif %}
+  {% if demo_logins.get(tab) %}
+  <div class="demo-login">
+    <strong>Demo login</strong>
+    {% if tab == 'customer' %}
+      <span>Phone <code>{{ demo_logins.customer[0] }}</code> · PIN <code>{{ demo_logins.customer[1] }}</code></span>
+    {% else %}
+      <span>Username <code>{{ demo_logins.admin[0] }}</code> · Password <code>{{ demo_logins.admin[1] }}</code></span>
+    {% endif %}
+    <span class="muted small">{{ "Try the shop owner side too." if tab == 'customer' else "Try the customer side too." }}
+      <a href="/login?tab={{ 'admin' if tab == 'customer' else 'customer' }}">Switch</a></span>
+  </div>
+  {% endif %}
 </section>
 {% endblock %}

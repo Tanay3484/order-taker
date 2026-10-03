@@ -18,17 +18,22 @@ def _home_for(user) -> str:
 
 
 @router.get("/")
-def home(user=Depends(current_user), conn=Depends(get_conn)):
-    if not auth.admin_exists(conn):
+def home(request: Request, user=Depends(current_user), conn=Depends(get_conn)):
+    if not auth.admin_exists(conn) and not _setup_locked(request):
         return RedirectResponse("/setup", 303)
     return RedirectResponse(_home_for(user), 303)
 
 
 # ---- AUTH-1: one-time setup ----
 
+def _setup_locked(request: Request) -> bool:
+    """HOST-1: when the admin comes from env vars, nobody can claim the shop through /setup."""
+    return request.app.state.settings.env_admin
+
+
 @router.get("/setup")
 def setup_page(request: Request, conn=Depends(get_conn)):
-    if auth.admin_exists(conn):
+    if auth.admin_exists(conn) or _setup_locked(request):
         raise HTTPException(404)
     return render(request, conn, "setup.html", errors=[], form={})
 
@@ -36,7 +41,7 @@ def setup_page(request: Request, conn=Depends(get_conn)):
 @router.post("/setup", dependencies=[Depends(check_csrf)])
 def setup_submit(request: Request, conn=Depends(get_conn), name: str = Form(""), username: str = Form(""),
                  password: str = Form(""), shop_name: str = Form(""), shop_whatsapp: str = Form("")):
-    if auth.admin_exists(conn):
+    if auth.admin_exists(conn) or _setup_locked(request):
         raise HTTPException(404)
     errors = []
     if not name.strip():
@@ -66,7 +71,7 @@ def setup_submit(request: Request, conn=Depends(get_conn), name: str = Form(""),
 
 @router.get("/login")
 def login_page(request: Request, conn=Depends(get_conn), user=Depends(current_user), tab: str = "customer"):
-    if not auth.admin_exists(conn):
+    if not auth.admin_exists(conn) and not _setup_locked(request):
         return RedirectResponse("/setup", 303)
     if user is not None:
         return RedirectResponse(_home_for(user), 303)

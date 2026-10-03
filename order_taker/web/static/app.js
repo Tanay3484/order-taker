@@ -51,6 +51,14 @@
     }
   });
 
+  // Demo: fill the intake box with the sample chat (HOST-6)
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("[data-sample-chat]")) return;
+    var box = e.target.closest("form").querySelector("textarea[name=text]");
+    box.value = document.getElementById("sample-chat").content.textContent.trim();
+    box.focus();
+  });
+
   // Pickup toggle hides the address
   function syncPickup(box) {
     var form = box.closest("form");

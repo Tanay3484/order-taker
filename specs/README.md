@@ -35,5 +35,6 @@ specs/
 | 003 | [Multi-agent order intake](003-multi-agent-intake/requirements.md) | Implemented |
 | 004 | [Live progress feed in plain English](004-live-progress-feed/requirements.md) | Implemented |
 | 005 | [Order tracking: statuses, admin board, customer view](005-order-tracking/requirements.md) | Implemented |
+| 006 | [Hosted demo (Hugging Face Spaces)](006-hosted-demo/requirements.md) | Implemented |
 
 Build order: 001 → 002 → 003 → 004 → 005. Features 003 and 004 are built together because the agents emit the progress events.
