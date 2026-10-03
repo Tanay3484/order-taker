@@ -6,8 +6,16 @@ FROM ollama/ollama:0.35.1 AS ollama
 # Python base instead of plain Ubuntu (matches CI's 3.11)
 FROM python:3.11-slim
 
-# Hugging Face runs the container as uid 1000, so create that user (as root)
-RUN useradd -m -u 1000 user
+# Tools Hugging Face's Dev Mode needs inside the image (SSH, VS Code server, git).
+# Harmless when Dev Mode is off.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends bash git git-lfs wget curl procps ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Hugging Face runs the container as uid 1000, so create that user (as root).
+# Dev Mode also expects the app in /app, owned by that user.
+RUN useradd -m -u 1000 user \
+    && mkdir /app && chown user:user /app
 
 # Copy the Ollama binary and its libraries from the official image
 COPY --from=ollama /usr/bin/ollama /usr/bin/ollama
@@ -39,7 +47,7 @@ RUN mkdir -p /home/user/data \
     && ollama pull qwen2.5:3b
 
 # App code last: it changes most often, so it shouldn't invalidate the layers above
-WORKDIR /home/user/app
+WORKDIR /app
 COPY --chown=user:user . .
 
 EXPOSE 7860
