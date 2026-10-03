@@ -51,6 +51,11 @@
     }
   });
 
+  // HOST-9: inside another page's frame (the Hugging Face Space page), offer a full tab
+  var framed = false;
+  try { framed = window.self !== window.top; } catch (err) { framed = true; }
+  if (framed) document.querySelectorAll("[data-open-tab]").forEach(function (a) { a.hidden = false; });
+
   // Demo: fill the intake box with the sample chat (HOST-6)
   document.addEventListener("click", function (e) {
     if (!e.target.closest("[data-sample-chat]")) return;

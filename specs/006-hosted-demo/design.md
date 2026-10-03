@@ -15,6 +15,9 @@ New fields: `admin_username`, `admin_password`, `shop_name`, `shop_whatsapp`, `s
 
 **Why judges should use the direct link:** huggingface.co shows the Space inside an iframe from `*.hf.space`. That makes the session cookie a third-party cookie, which many browsers block whatever the SameSite setting. The DEV post links straight to `https://<user>-order-taker.hf.space`.
 
+## Inside the Hugging Face page (HOST-2, HOST-9, HOST-10)
+The Space page on huggingface.co shows the app in an iframe from `*.hf.space`, so for the browser our cookie is a third-party cookie. `SameSite=Lax` cookies aren't sent there, so the CSRF check failed on every form. With `SameSite=None; Secure; Partitioned` (CHIPS), Chrome, Edge and Firefox keep a separate cookie for the app inside that page. Safari blocks third-party cookies in frames altogether, which is why `app.js` shows an "open in its own tab" link when `window.self !== window.top`, and `check_csrf` explains the problem when no session cookie arrives at all.
+
 ## Demo UI (HOST-4, HOST-6)
 `render()` adds `demo` and `demo_logins` to every template. `base.html` shows the banner. `login.html` shows the demo login for the current tab. `admin_intake.html` gets a button that fills the textarea from a `<template>` holding the sample chat, read once at startup.
 

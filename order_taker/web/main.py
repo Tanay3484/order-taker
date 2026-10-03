@@ -75,9 +75,9 @@ def create_app(settings: Settings | None = None, client=None) -> FastAPI:
                                  NEXT_ACTION=orders_mod.NEXT_ACTION)
     app.state.templates = templates
 
-    app.add_middleware(SessionMiddleware, secret_key=_secret_key(settings), session_cookie="ot_session",
+    app.add_middleware(SessionMiddleware, secret_key=_secret_key(settings), session_cookie=deps.SESSION_COOKIE,
                        max_age=deps.CUSTOMER_SESSION_SECONDS, same_site=settings.samesite,
-                       https_only=settings.secure_cookies)  # HOST-2
+                       https_only=settings.secure_cookies, partitioned=settings.partitioned)  # HOST-2
     app.mount("/static", StaticFiles(directory=str(HERE / "static")), name="static")
     app.include_router(routes_auth.router)
     app.include_router(routes_admin.router)

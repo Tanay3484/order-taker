@@ -25,7 +25,7 @@ class Settings:
     shop_name: str = field(default_factory=lambda: os.getenv("ORDER_SHOP_NAME", "").strip())
     shop_whatsapp: str = field(default_factory=lambda: os.getenv("ORDER_SHOP_WHATSAPP", "").strip())
     secure_cookies: bool = field(default_factory=lambda: _flag("ORDER_SECURE_COOKIES"))
-    cookie_samesite: str = field(default_factory=lambda: os.getenv("ORDER_COOKIE_SAMESITE", "lax").strip().lower())
+    cookie_samesite: str = field(default_factory=lambda: os.getenv("ORDER_COOKIE_SAMESITE", "").strip().lower())
     demo: bool = field(default_factory=lambda: _flag("ORDER_DEMO"))
     max_chat_chars: int = field(default_factory=lambda: int(os.getenv("ORDER_MAX_CHAT_CHARS", "50000")))
 
@@ -35,10 +35,17 @@ class Settings:
 
     @property
     def samesite(self) -> str:
-        """HOST-2: browsers reject SameSite=None without Secure, so fall back to lax."""
-        if self.cookie_samesite == "none" and not self.secure_cookies:
+        """HOST-2. Unset: 'none' for a secure demo (it's shown inside the Hugging Face page), else 'lax'.
+        Browsers reject SameSite=None without Secure, so that falls back to lax."""
+        wanted = self.cookie_samesite or ("none" if self.demo and self.secure_cookies else "lax")
+        if wanted not in ("lax", "strict", "none") or (wanted == "none" and not self.secure_cookies):
             return "lax"
-        return self.cookie_samesite if self.cookie_samesite in ("lax", "strict", "none") else "lax"
+        return wanted
+
+    @property
+    def partitioned(self) -> bool:
+        """HOST-2: a cookie usable inside another site's frame gets its own partition (CHIPS)."""
+        return self.samesite == "none"
 
     @property
     def data_dir(self) -> str:

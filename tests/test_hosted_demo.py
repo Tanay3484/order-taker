@@ -1,6 +1,7 @@
 """006 Hosted demo."""
 
 import dataclasses
+import re
 from datetime import date
 
 import pytest
@@ -12,7 +13,7 @@ from order_taker.agents.chat_parser import group_by_sender, parse_chat
 from order_taker.config import Settings
 from order_taker.web.main import create_app
 
-from .conftest import page_text, post
+from .conftest import get_csrf, page_text, post
 from .test_chat_parser import SAMPLES
 
 
@@ -152,3 +153,49 @@ def test_host5_seeded_dates_follow_today(tmp_path):
     bootstrap.seed_demo(conn, today=day)
     for tab in ("today", "tomorrow", "upcoming", "past"):
         assert om.orders_in_tab(conn, tab, today=day), tab
+
+
+def test_host2_demo_cookie_works_inside_the_hugging_face_frame(settings, fake):
+    """HOST-2 (amended): a secure demo defaults to SameSite=None + Partitioned; laptops stay on Lax."""
+    s = dataclasses.replace(settings, admin_username="demo", admin_password="try-the-demo", demo=True,
+                            secure_cookies=True)
+    assert s.samesite == "none" and s.partitioned
+    with TestClient(create_app(s, fake), base_url="https://testserver") as c:
+        cookie = c.get("/login").headers["set-cookie"].lower()
+        assert "samesite=none" in cookie and "secure" in cookie and "partitioned" in cookie
+    assert Settings().samesite == "lax" and not Settings().partitioned
+    assert Settings(demo=True).samesite == "lax"  # no HTTPS, no SameSite=None
+
+
+def test_host10_missing_cookie_is_explained(demo_client):
+    """HOST-10: what happened inside the Hugging Face page: the form arrives without our cookie."""
+    token = get_csrf(demo_client, "/login")
+    demo_client.cookies.clear()
+    r = demo_client.post("/login", data={"csrf": token, "kind": "admin", "ident": "demo", "secret": "x"})
+    text = page_text(r)
+    assert r.status_code == 400 and "open it in its own tab" in text and "expired" not in text
+
+
+def test_host9_open_in_tab_link(demo_client, client):
+    """HOST-9: the link is on demo pages (shown by app.js only when framed)."""
+    html = demo_client.get("/login").text
+    assert re.search(r'<a class="open-tab" href="http[^"]*" target="_blank"[^>]*hidden data-open-tab>', html)
+    assert "data-open-tab" not in client.get("/setup").text
+
+
+def test_host11_demo_logins_are_prefilled(demo_client):
+    """HOST-11: visitors only need to tap Log in."""
+    customer = demo_client.get("/login").text
+    k = bootstrap.DEMO_CUSTOMER
+    assert f'value="{k["phone"]}"' in customer and f'value="{k["pin"]}"' in customer
+    admin = demo_client.get("/login?tab=admin").text
+    assert 'value="demo"' in admin and 'value="bake-the-demo"' in admin
+
+
+def test_host11_not_prefilled_outside_demo(client):
+    from .conftest import setup_admin
+    setup_admin(client)
+    client.cookies.clear()
+    html = client.get("/login?tab=admin").text
+    password_input = re.search(r'<input name="secret"[^>]*>', html).group(0)
+    assert "value=" not in password_input
