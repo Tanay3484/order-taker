@@ -10,7 +10,7 @@ from datetime import date
 
 from fastapi import Depends, HTTPException, Request
 
-from .. import auth, bootstrap, db
+from .. import auth, bootstrap, db, tours
 from .. import orders as orders_mod
 
 ADMIN_SESSION_SECONDS = 12 * 3600
@@ -110,4 +110,5 @@ def render(request: Request, conn: sqlite3.Connection, template: str, status_cod
         "demo": request.app.state.settings.demo,
         "demo_logins": demo_logins(request.app.state.settings),
     }
+    base["tour"] = tours.for_page(template, {**base, **ctx}, request.app.state.settings.demo)  # 007
     return templates.TemplateResponse(request, template, {**base, **ctx}, status_code=status_code)

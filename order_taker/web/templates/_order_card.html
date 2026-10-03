@@ -18,7 +18,7 @@
     {% if r.admin_note %}<br><span class="muted">🔒 {{ r.admin_note }}</span>{% endif %}
   </p>
   {% if o.customer %}
-  <div class="login-row">
+  <div class="login-row" data-tour="login-row">
     {% if o.login_msg %}
       <span>🔑 Login PIN <strong class="pin-inline">{{ o.customer.starter_pin }}</strong> <span class="muted small">(not used yet)</span></span>
       <input type="hidden" id="login-msg-{{ r.id }}" value="{{ o.login_msg }}">
@@ -40,7 +40,7 @@
     {% if o.next %}
     <form method="post" action="/admin/orders/{{ r.id }}/advance?next={{ here|urlencode }}">
       <input type="hidden" name="csrf" value="{{ csrf }}">
-      <button class="btn primary big">{{ o.next }}</button>
+      <button class="btn primary big" data-tour="next-step">{{ o.next }}</button>
     </form>
     {% endif %}
     {% if o.can_undo %}

@@ -13,7 +13,7 @@
   {% if o.status == 'cancelled' %}
     <span class="pill grey">Cancelled</span>
   {% else %}
-  <ol class="steps" aria-label="Order progress: {{ o.status_label }}">
+  <ol class="steps" data-tour="steps" aria-label="Order progress: {{ o.status_label }}">
     {% for s in FLOW %}
     <li class="{{ 'done' if loop.index0 < o.step else ('now' if loop.index0 == o.step else '') }}"
         {% if loop.index0 == o.step %}aria-current="step"{% endif %}>
@@ -39,7 +39,7 @@
 
   {% if o.can_change %}
   <div class="actions">
-    <a class="btn primary" href="/my-orders/{{ o.id }}/change">Change order</a>
+    <a class="btn primary" data-tour="change-order" href="/my-orders/{{ o.id }}/change">Change order</a>
     <a class="btn" href="/my-orders/{{ o.id }}/cancel">Cancel order</a>
   </div>
   {% if shop_whatsapp %}
