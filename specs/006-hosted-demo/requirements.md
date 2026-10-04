@@ -16,12 +16,15 @@ This is the deliberate exception to constitution §1 ("reachable only on the loc
 | ID | Criterion |
 |---|---|
 | HOST-1 | WHEN `ORDER_ADMIN_USERNAME` and `ORDER_ADMIN_PASSWORD` are set, THE SYSTEM SHALL create that admin on startup if none exists, or update its password to match if it does. `ORDER_SHOP_NAME` and `ORDER_SHOP_WHATSAPP` set the shop details. `/setup` SHALL then return 404. |
-| HOST-2 | WHEN `ORDER_SECURE_COOKIES=1`, session cookies SHALL be sent over HTTPS only. `ORDER_COOKIE_SAMESITE` SHALL accept `lax` (default), `strict` or `none`. `none` is only allowed together with secure cookies. |
+| HOST-2 | WHEN `ORDER_SECURE_COOKIES=1`, session cookies SHALL be sent over HTTPS only. `ORDER_COOKIE_SAMESITE` SHALL accept `lax`, `strict` or `none`. `none` is only allowed together with secure cookies. When it isn't set, it SHALL default to `none` in demo mode with secure cookies (so login works inside the Hugging Face page, which shows the app in a frame from another site), and `lax` otherwise. `none` cookies SHALL also be `Partitioned`. *(Amended after launch: logins failed with "This form has expired" inside the Hugging Face page.)* |
 | HOST-3 | `GET /healthz` SHALL return 200 with `{"ok": true, "ai_ready": <bool>}` without needing a login, and SHALL NOT fail when the AI helper is still starting. |
 | HOST-4 | WHEN `ORDER_DEMO=1`, every page SHALL show a banner: "This is a demo. Please don't enter real names, phone numbers or addresses. Everything resets when the demo restarts." |
 | HOST-5 | WHEN `ORDER_DEMO=1` and there are no orders, THE SYSTEM SHALL load example customers and orders in different stages on startup, including a demo customer who can log in. None of the sample chat's senders SHALL be among them, so the sample chat still produces new orders. |
 | HOST-6 | WHEN `ORDER_DEMO=1`, the login page SHALL show the demo logins for both tabs (shop owner and customer), and the intake page SHALL have a **Use the sample chat** button that fills in `samples/sample_chat.txt`. |
 | HOST-7 | Pasted or uploaded chats longer than `ORDER_MAX_CHAT_CHARS` (default 50 000) SHALL be refused with: "That's a very long chat. Please paste just the recent messages." |
+| HOST-9 | WHEN the app is shown inside another page (a frame) in demo mode, THE SYSTEM SHALL show a link: "Open the demo in its own tab ↗". |
+| HOST-10 | WHEN a form is sent without any session cookie, the error SHALL explain: "Your browser didn't keep this page's login details. This happens when the site is shown inside another page. Please open it in its own tab and try again." |
+| HOST-11 | WHEN `ORDER_DEMO=1`, both login tabs SHALL come pre-filled with the demo login, so visitors only need to tap **Log in**. |
 | HOST-8 | The listening port SHALL come from `ORDER_PORT` (Hugging Face uses 7860), and links sent to customers SHALL use `ORDER_PUBLIC_URL`. |
 
 ## Out of scope

@@ -12,14 +12,16 @@
     <input type="hidden" name="kind" value="{{ tab }}">
     {% if tab == 'customer' %}
       <label data-tour="phone">Your phone number
-        <input name="ident" value="{{ ident }}" required inputmode="tel" autocomplete="tel" placeholder="98450 12345"></label>
+        <input name="ident" value="{{ ident or (demo_logins.customer[0] if demo_logins.customer) }}" required inputmode="tel" autocomplete="tel" placeholder="98450 12345"></label>
       <label data-tour="pin">PIN <span class="hint">the shop sent this to you on WhatsApp</span>
-        <input name="secret" type="password" required inputmode="numeric" autocomplete="current-password"></label>
+        <input name="secret" type="password" required inputmode="numeric" autocomplete="current-password"
+               {% if demo_logins.customer %}value="{{ demo_logins.customer[1] }}"{% endif %}></label>
     {% else %}
       <label>Username
-        <input name="ident" value="{{ ident }}" required autocomplete="username" autocapitalize="none"></label>
+        <input name="ident" value="{{ ident or (demo_logins.admin[0] if demo_logins.admin) }}" required autocomplete="username" autocapitalize="none"></label>
       <label>Password
-        <input name="secret" type="password" required autocomplete="current-password"></label>
+        <input name="secret" type="password" required autocomplete="current-password"
+               {% if demo_logins.admin %}value="{{ demo_logins.admin[1] }}"{% endif %}></label>
     {% endif %}
     <button class="btn primary">Log in</button>
   </form>
@@ -27,6 +29,7 @@
   {% if demo_logins.get(tab) %}
   <div class="demo-login" data-tour="demo-login">
     <strong>Demo login</strong>
+    <span class="small">Already filled in above. Just tap <strong>Log in</strong>.</span>
     {% if tab == 'customer' %}
       <span>Phone <code>{{ demo_logins.customer[0] }}</code> · PIN <code>{{ demo_logins.customer[1] }}</code></span>
     {% else %}

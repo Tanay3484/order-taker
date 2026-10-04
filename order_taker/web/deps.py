@@ -17,6 +17,11 @@ ADMIN_SESSION_SECONDS = 12 * 3600
 CUSTOMER_SESSION_SECONDS = 30 * 24 * 3600
 
 
+SESSION_COOKIE = "ot_session"
+NO_COOKIE = ("Your browser didn't keep this page's login details. This happens when the site is shown inside "
+             "another page. Please open it in its own tab and try again.")
+
+
 class LoginRequired(Exception):
     pass
 
@@ -85,6 +90,8 @@ async def check_csrf(request: Request) -> None:
     form = await request.form()
     sent = str(form.get("csrf", ""))
     if not sent or not hmac.compare_digest(sent, request.session.get("csrf", "")):
+        if SESSION_COOKIE not in request.cookies:  # HOST-10: the browser dropped our cookie
+            raise HTTPException(400, NO_COOKIE)
         raise HTTPException(400, "This form has expired. Please go back, refresh the page and try again.")
 
 
@@ -109,6 +116,7 @@ def render(request: Request, conn: sqlite3.Connection, template: str, status_cod
         "today": date.today().isoformat(),
         "demo": request.app.state.settings.demo,
         "demo_logins": demo_logins(request.app.state.settings),
+        "public_url": request.app.state.public_url,
     }
     base["tour"] = tours.for_page(template, {**base, **ctx}, request.app.state.settings.demo)  # 007
     return templates.TemplateResponse(request, template, {**base, **ctx}, status_code=status_code)

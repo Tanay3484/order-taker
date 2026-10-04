@@ -244,3 +244,4 @@ table.prep .num { text-align: right; white-space: nowrap; font-variant-numeric: 
 .tour-pop .tour-text { margin: 0 0 12px; }
 .tour-buttons { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 .tour-pop.sheet { border-bottom: 4px solid var(--brand); }
+.demo-banner .open-tab { display: inline-block; margin-left: 6px; font-weight: 700; color: inherit; }
